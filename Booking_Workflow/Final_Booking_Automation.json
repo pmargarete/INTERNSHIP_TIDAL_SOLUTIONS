@@ -1,0 +1,1354 @@
+{
+  "name": "Final_Booking_Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -160
+      ],
+      "id": "5f320bee-332c-49d4-98a3-486181744ac5",
+      "name": "Webhook — GET /booking",
+      "webhookId": "aaaaaaaa-0001-0001-0001-000000000001"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Book a Meeting</title>\n  <style>\n    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }\n    .card { background: #ffffff; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 440px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }\n    .card-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }\n    .logo { font-size: 26px; line-height: 1; }\n    h1 { font-size: 24px; font-weight: 700; color: #111; }\n    .subtitle { text-align: center; font-size: 15px; color: #666; margin-bottom: 36px; line-height: 1.5; }\n    .field { margin-bottom: 20px; }\n    label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }\n    input { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #111; background: #fafafa; transition: border-color 0.2s; outline: none; }\n    input:focus { border-color: #1565C0; background: #fff; }\n    input::placeholder { color: #bbb; }\n    .btn { display: block; width: 100%; margin-top: 28px; padding: 14px; background: #1565C0; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; }\n    .btn:hover { background: #0D47A1; }\n    .btn:active { transform: scale(0.98); }\n    .step-hint { font-size: 12px; color: #bbb; text-align: center; margin-top: 20px; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <div class=\"card-header\">\n      <div class=\"logo\">📅</div>\n      <h1>Book a Meeting</h1>\n    </div>\n    <p class=\"subtitle\">Enter your details to see available time.</p>\n    <form method=\"POST\" action=\"/webhook/booking\">\n      <div class=\"field\">\n        <label for=\"name\">Name</label>\n        <input type=\"text\" id=\"name\" name=\"name\" placeholder=\"John Smith\" required autocomplete=\"name\">\n      </div>\n      <div class=\"field\">\n        <label for=\"email\">Email</label>\n        <input type=\"email\" id=\"email\" name=\"email\" placeholder=\"jsmith@gmail.com\" required autocomplete=\"email\">\n      </div>\n      <button type=\"submit\" class=\"btn\">Check Availability</button>\n    </form>\n    <p class=\"step-hint\">1 of 2</p>\n  </div>\n</body>\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        240,
+        -160
+      ],
+      "id": "aa2650d6-3cf2-411b-8f7e-14de1567e64d",
+      "name": "Respond — serve Page 1 form"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4b3b8735-68ef-430b-b634-069fc25b6ace",
+      "name": "Webhook — POST /booking",
+      "webhookId": "aaaaaaaa-0001-0001-0001-000000000002"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-name",
+              "name": "clientName",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "set-email",
+              "name": "clientEmail",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "aba5014f-c93a-4b1a-ae03-168dc8b1842c",
+      "name": "Set — clientName + clientEmail"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": "primary"
+        },
+        "timeMin": "={{ $now.toISO() }}",
+        "timeMax": "={{ $now.plus({days:7}).toISO() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        0
+      ],
+      "id": "d7e37315-b25f-4e14-834c-64b9be69791d",
+      "name": "Google Calendar — get freebusy",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "0IT1z5zz0ATyNyyA",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('RAW freebusy output:', JSON.stringify($input.all()[0].json, null, 2));\n\nconst raw = $input.all()[0].json;\nlet busy = [];\nif (raw.calendars && raw.calendars.primary && Array.isArray(raw.calendars.primary.busy)) {\n  busy = raw.calendars.primary.busy;\n} else if (Array.isArray(raw.busy)) {\n  busy = raw.busy;\n} else {\n  console.log('Could not find busy array — treating calendar as empty.');\n}\n\nconst slots = [];\nconst tz = 'Asia/Manila';\n\nconst start = DateTime.now().setZone(tz).plus({ days: 1 }).startOf('day');\n\nconst phHolidays2026 = [\n  '2026-01-01','2026-02-17','2026-03-20','2026-04-02','2026-04-03',\n  '2026-04-04','2026-04-09','2026-05-01','2026-05-20','2026-06-12',\n  '2026-08-21','2026-08-31','2026-11-01','2026-11-02','2026-11-30',\n  '2026-12-08','2026-12-24','2026-12-25','2026-12-30','2026-12-31',\n];\n\nconst holidayDates = new Set(phHolidays2026);\n\nbusy.forEach(b => {\n  const bStart = DateTime.fromISO(b.start);\n  const bEnd = DateTime.fromISO(b.end);\n  if (bEnd.diff(bStart, 'hours').hours >= 24) {\n    holidayDates.add(bStart.toISODate());\n  }\n});\n\nconst staticData = $getWorkflowStaticData('global');\nconst cancelledSlots = new Set(staticData._cancelledSlots || []);\n\nconst effectiveBusy = busy.filter(b => !cancelledSlots.has(b.start));\n\nfor (let d = 0; d < 7; d++) {\n  const currentDay = start.plus({ days: d });\n  const dateStr = currentDay.toISODate();\n\n  if (currentDay.weekday >= 6) continue;\n  if (holidayDates.has(dateStr)) continue;\n\n  for (let h = 8; h < 17; h++) {\n    if (h === 12) continue;\n\n    for (let m = 0; m < 60; m += 30) {\n      const slot = currentDay.set({ hour: h, minute: m });\n      const slotEnd = slot.plus({ minutes: 30 });\n\n      const isBusy = effectiveBusy.some(b =>\n        slot < DateTime.fromISO(b.end) && slotEnd > DateTime.fromISO(b.start)\n      );\n\n      if (!isBusy) slots.push(slot.toISO());\n    }\n  }\n}\n\nconst clientEmail = $('Set — clientName + clientEmail').item.json.clientEmail;\nconst clientName  = $('Set — clientName + clientEmail').item.json.clientName;\n\nstaticData[clientEmail] = {\n  slots,\n  clientName,\n  clientEmail,\n  storedAt: Date.now()\n};\n\nconsole.log(`Stored ${slots.length} slots for ${clientEmail}`);\n\nreturn [{ json: { slots, clientName, clientEmail, slotCount: slots.length } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "1ab56dbb-0831-43bf-a6b7-2267d2601ae5",
+      "name": "Code — calculate + store free slots"
+    },
+    {
+      "parameters": {
+        "respondWith": "redirect",
+        "redirectURL": "={{ \n  'https://' \n  + $('Set — clientName + clientEmail').item.json.headers['host'] \n  + '/webhook/booking-step2?name=' \n  + encodeURIComponent($json.clientName) \n  + '&email=' \n  + encodeURIComponent($json.clientEmail) \n}}",
+        "options": {
+          "responseCode": 302
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        960,
+        0
+      ],
+      "id": "0f389549-2936-457a-8a4f-7ae2ad3742aa",
+      "name": "Respond — redirect to Page 2"
+    },
+    {
+      "parameters": {
+        "path": "booking-step2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        256
+      ],
+      "id": "48ff8845-c124-4a73-876c-b9b163cdb78c",
+      "name": "Webhook — GET /booking-step2",
+      "webhookId": "aaaaaaaa-0002-0002-0002-000000000003"
+    },
+    {
+      "parameters": {
+        "jsCode": "const email = $json.query.email || '';\nconst name  = $json.query.name  || '';\n\nconst staticData = $getWorkflowStaticData('global');\nconst record = staticData[email];\n\nif (!record || !record.slots || record.slots.length === 0) {\n  return [{ json: {\n    renderError: true,\n    errorMessage: 'Your session has expired or no slots were found. Please start over.',\n    name,\n    email\n  } }];\n}\n\nconst bookedSlots = new Set(staticData._bookedSlots || []);\nconst availableSlots = record.slots.filter(s => !bookedSlots.has(s));\n\nconst options = availableSlots.map(s => {\n  const dt = new Date(s);\n  const label = dt.toLocaleString('en-PH', {\n    weekday: 'short', month: 'short', day: 'numeric',\n    hour: '2-digit', minute: '2-digit',\n    timeZone: 'Asia/Manila'\n  });\n  return `<option value=\"${s}\">${label}</option>`;\n}).join('');\n\nreturn [{ json: {\n  renderError: false,\n  name: record.clientName,\n  email: record.clientEmail,\n  slotCount: availableSlots.length,\n  optionsHtml: options\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        256
+      ],
+      "id": "6ba7611e-0b3f-4c35-ac23-125a1d323eae",
+      "name": "Code — load slots + build option list"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ (() => {\n  const d = $json;\n  if (d.renderError) {\n    return `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Session expired</title>\n<style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f0f2f5;}\n.card{background:#fff;border-radius:16px;padding:48px 40px;max-width:400px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08);}\nh2{font-size:22px;color:#111;margin-bottom:12px;} p{color:#666;margin-bottom:24px;}\na{display:inline-block;padding:12px 24px;background:#1565C0;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;}</style>\n</head><body><div class=\"card\"><h2>Session expired</h2><p>${d.errorMessage}</p><a href=\"/webhook/booking\">Start over</a></div></body></html>`;\n  }\n  return `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Pick a Time</title>\n  <style>\n    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }\n    .card { background: #fff; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 440px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }\n    .card-header { text-align: center; margin-bottom: 28px; }\n    h1 { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 8px; }\n    .subtitle { font-size: 15px; color: #666; margin-bottom: 4px; line-height: 1.5; }\n    .slot-count { font-size: 13px; color: #1565C0; font-weight: 600; }\n    .field { margin-top: 20px; }\n    label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }\n    select { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #111; background: #fafafa; outline: none; cursor: pointer; transition: border-color 0.2s; }\n    select:focus { border-color: #1565C0; background-color: #fff; }\n    .btn { display: block; width: 100%; margin-top: 28px; padding: 14px; background: #1565C0; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; }\n    .btn:hover { background: #0D47A1; }\n    .btn:active { transform: scale(0.98); }\n    .step-hint { font-size: 12px; color: #bbb; text-align: center; margin-top: 20px; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <div class=\"card-header\">\n      <h1>Choose Booking Time</h1>\n      <p class=\"subtitle\">${d.name}, these are the available slots for the next 7 days.</p>\n      <p class=\"slot-count\">${d.slotCount} time${d.slotCount !== 1 ? 's' : ''} available</p>\n    </div>\n    <form method=\"POST\" action=\"https://bradford-antral-mortally.ngrok-free.dev/webhook/booking-step2\">\n      <input type=\"hidden\" name=\"clientName\" value=\"${d.name}\">\n      <input type=\"hidden\" name=\"clientEmail\" value=\"${d.email}\">\n      <div class=\"field\">\n        <label for=\"slot\">Available times</label>\n        <select id=\"slot\" name=\"selectedSlot\" required>\n          ${d.optionsHtml}\n        </select>\n      </div>\n      <button type=\"submit\" class=\"btn\">Confirm Booking</button>\n    </form>\n    <p class=\"step-hint\">2 of 2</p>\n  </div>\n</body>\n</html>`;\n})() }}\n",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        480,
+        256
+      ],
+      "id": "04f216d0-97f9-4199-97f7-c076be18df35",
+      "name": "Respond — serve Page 2 slot picker"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "booking-step2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        448
+      ],
+      "id": "e20e2401-071f-4521-8162-6767bfe8d9e3",
+      "name": "Webhook — POST /booking-step2",
+      "webhookId": "aaaaaaaa-0002-0002-0002-000000000004"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set2-name",
+              "name": "clientName",
+              "value": "={{ $json.body.clientName }}",
+              "type": "string"
+            },
+            {
+              "id": "set2-email",
+              "name": "clientEmail",
+              "value": "={{ $json.body.clientEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "set2-slot",
+              "name": "=selectedSlot",
+              "value": "={{ $json.body.selectedSlot }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        448
+      ],
+      "id": "dc002381-caa3-4496-8560-1b4819f8d3ad",
+      "name": "Set — slot + client data"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "list"
+        },
+        "start": "={{ $json.selectedSlot }}",
+        "end": "={{ DateTime.fromISO($json.selectedSlot).plus({minutes:30}).toISO() }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $json.clientEmail }}"
+          ],
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "hangoutsMeet"
+            }
+          },
+          "summary": "=Booking — {{ $json.clientName }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        448
+      ],
+      "id": "47aaae7f-0393-4028-9ac8-2f29ba483693",
+      "name": "Google Calendar — create event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "0IT1z5zz0ATyNyyA",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set3-id",
+              "name": "bookingId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "set3-meet",
+              "name": "meetLink",
+              "value": "={{ $json.hangoutLink }}",
+              "type": "string"
+            },
+            {
+              "id": "set3-name",
+              "name": "clientName",
+              "value": "={{ $('Set — slot + client data').item.json.clientName }}",
+              "type": "string"
+            },
+            {
+              "id": "set3-email",
+              "name": "clientEmail",
+              "value": "={{ $('Set — slot + client data').item.json.clientEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "set3-slot",
+              "name": "selectedSlot",
+              "value": "={{ $('Set — slot + client data').item.json.selectedSlot }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        448
+      ],
+      "id": "6e5def4f-c414-42c0-b8e0-e206e3ddf791",
+      "name": "Set — bookingId + meetLink"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst email = $json.clientEmail;\nconst slot  = $json.selectedSlot;\n\nif (staticData[email]) {\n  staticData[email].bookingId = $json.bookingId;\n  staticData[email].selectedSlot = slot;\n}\n\nif (!staticData._bookedSlots) staticData._bookedSlots = [];\nif (!staticData._bookedSlots.includes(slot)) {\n  staticData._bookedSlots.push(slot);\n}\n\nreturn [{ json: $json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        448
+      ],
+      "id": "887911da-ec23-4be3-b5b6-3d6e016c7401",
+      "name": "Code — if bookingId is changed"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Booking Confirmed</title>\n  <style>\n    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }\n    .card { background: #fff; border-radius: 16px; padding: 56px 48px; max-width: 400px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }\n    .icon { font-size: 56px; margin-bottom: 20px; }\n    h2 { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 10px; }\n    p { font-size: 15px; color: #666; line-height: 1.6; }\n    .note { margin-top: 16px; font-size: 13px; color: #aaa; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <div class=\"icon\">✅</div>\n    <h2>You're all booked!</h2>\n    <p>Your meeting has been confirmed and added to the calendar.</p>\n    <p class=\"note\">Check your email for your receipt and Google Meet link.</p>\n  </div>\n</body>\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1184,
+        448
+      ],
+      "id": "e096ead0-9389-4e61-b78e-5963b8c5faef",
+      "name": "Respond — booking confirmed page"
+    },
+    {
+      "parameters": {
+        "html": "{{ (() => {\n  const name  = $('Set — bookingId + meetLink').item.json.clientName;\n  const email = $('Set — bookingId + meetLink').item.json.clientEmail;\n  const slot  = $('Set — bookingId + meetLink').item.json.selectedSlot;\n  const meet  = $('Set — bookingId + meetLink').item.json.meetLink;\n  const id    = $('Set — bookingId + meetLink').item.json.bookingId;\n  const baseUrl = 'https://bradford-antral-mortally.ngrok-free.dev';\n  const dt = new Date(slot);\n  const formatted = dt.toLocaleString('en-PH', {\n    weekday: 'long', year: 'numeric', month: 'long',\n    day: 'numeric', hour: '2-digit', minute: '2-digit',\n    timeZone: 'Asia/Manila'\n  });\n  const nameParts = name.trim().split(' ');\n  const firstName = nameParts[0] || '';\n  const lastName  = nameParts.slice(1).join(' ') || '';\n  const today = new Date().toLocaleString('en-PH', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Manila' });\n  return `<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<style>\n  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');\n\n  * { box-sizing: border-box; margin: 0; padding: 0; }\n  body {\n    font-family: 'Inter', sans-serif;\n    background: #ffffff;\n    color: #1a1a2e;\n    width: 595px;\n    height: 842px;\n    margin: 0 auto;\n    display: flex;\n    flex-direction: column; /* Keeps header at top, content below */\n    overflow: hidden; \n  }\n\n    .content-wrapper {\n    flex-grow: 1; /* This pushes the footer/bottom to the very end */\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n  }\n  \n  /* HEADER */\n  .header {\n    background: #0D47A1;\n    padding: 22px 36px 18px;\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    border-bottom: 4px solid #1565C0;\n  }\n  .header-left h1 {\n    font-family: 'Source Serif 4', serif;\n    font-size: 20px;\n    font-weight: 700;\n    color: #ffffff;\n    letter-spacing: 0.04em;\n    text-transform: uppercase;\n  }\n  .header-left .tagline {\n    font-size: 10px;\n    color: rgba(255,255,255,0.7);\n    letter-spacing: 0.08em;\n    text-transform: uppercase;\n    margin-top: 2px;\n  }\n  .header-right {\n    text-align: right;\n  }\n  .header-right .contact-line {\n    font-size: 9.5px;\n    color: rgba(255,255,255,0.85);\n    line-height: 1.8;\n  }\n  /* TITLE BAND */\n  .title-band {\n    background: #E3F2FD;\n    border-left: 5px solid #1565C0;\n    padding: 14px 36px;\n  }\n  .title-band .booking-label {\n    font-size: 10px;\n    font-weight: 600;\n    color: #1565C0;\n    letter-spacing: 0.1em;\n    text-transform: uppercase;\n  }\n  .title-band .client-name {\n    font-family: 'Source Serif 4', serif;\n    font-size: 16px;\n    font-weight: 700;\n    color: #0D47A1;\n    margin-top: 2px;\n    letter-spacing: 0.01em;\n  }\n  .title-band .divider-line {\n    border: none;\n    border-top: 1.5px solid #90CAF9;\n    margin-top: 10px;\n  }\n  /* BODY */\n  .body-wrap {\n      flex: 1;\n      display: flex;\n      flex-direction: column;\n      padding: 20px 36px 0;\n      min-height: 0;\n  }\n  .section-title {\n    font-size: 13px;\n    font-weight: 700;\n    color: #0D47A1;\n    letter-spacing: 0.05em;\n    text-transform: uppercase;\n    margin-bottom: 4px;\n  }\n  .section-subtitle {\n    font-size: 11.5px;\n    color: #555;\n    margin-bottom: 16px;\n  }\n  /* TABLE */\n  .detail-table {\n    width: 100%;\n    border-collapse: collapse;\n    margin-bottom: 24px;\n    border: 1px solid #BBDEFB;\n    border-radius: 6px;\n    overflow: hidden;\n  }\n  .detail-table tr:nth-child(odd) { background: #F5F9FF; }\n  .detail-table tr:nth-child(even) { background: #ffffff; }\n  .detail-table td {\n    padding: 9px 14px;\n    font-size: 11.5px;\n    border-bottom: 1px solid #DDEEFF;\n    vertical-align: middle;\n  }\n  .detail-table tr:last-child td { border-bottom: none; }\n  .detail-table .td-label {\n    font-weight: 600;\n    color: #1565C0;\n    width: 38%;\n    text-transform: uppercase;\n    font-size: 10px;\n    letter-spacing: 0.05em;\n  }\n  .detail-table .td-val {\n    color: #1a1a2e;\n    font-weight: 500;\n  }\n  .detail-table .td-val a {\n    color: #1565C0;\n    text-decoration: none;\n  }\n  /* STATUS BADGE */\n  .status-row {\n    display: flex;\n    align-items: center;\n    gap: 8px;\n    margin-bottom: 18px;\n  }\n  .badge {\n    display: inline-block;\n    background: #1565C0;\n    color: #fff;\n    font-size: 9px;\n    font-weight: 700;\n    padding: 3px 10px;\n    border-radius: 20px;\n    letter-spacing: 0.08em;\n    text-transform: uppercase;\n  }\n  .status-text {\n    font-family: 'Source Serif 4', serif;\n    font-size: 15px;\n    font-weight: 600;\n    color: #0D47A1;\n  }\n  /* ACTIONS */\n  .actions-section {\n      flex: 1;\n      display: flex;\n      flex-direction: column;\n      justify-content: center;\n      align-items: center;\n      gap: 14px;\n      padding: 16px 0;\n  }\n  .actions-label {\n    font-size: 10px;\n    color: #888;\n    letter-spacing: 0.06em;\n    text-transform: uppercase;\n    margin-bottom: 10px;\n    font-weight: 600;\n  }\n  .btn-row {\n    display: flex;\n    gap: 12px;\n    justify-content: center;\n  }\n  .btn {\n    display: inline-block;\n    padding: 9px 20px;\n    border-radius: 6px;\n    text-decoration: none;\n    font-weight: 600;\n    font-size: 11px;\n    letter-spacing: 0.03em;\n  }\n  .btn-cancel { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }\n  .btn-reschedule { background: #E3F2FD; color: #0D47A1; border: 1px solid #BBDEFB; }\n  /* BOOKING ID */\n  .booking-id-section {\n    text-align: center;\n    margin-top: 16px;\n    padding: 10px 14px;\n    background: #F5F9FF;\n    border: 1px dashed #90CAF9;\n    border-radius: 6px;\n    display: inline-block;\n    width: 100%;\n  }\n  .booking-id-label {\n    font-size: 9px;\n    color: #1565C0;\n    text-transform: uppercase;\n    letter-spacing: 0.1em;\n    font-weight: 700;\n  }\n  .booking-id-val {\n    font-size: 11px;\n    color: #0D47A1;\n    font-weight: 600;\n    margin-top: 3px;\n    word-break: break-all;\n  }\n  /* FOOTER */\n  .footer {\n    background: #0D47A1;\n    padding: 10px 36px;\n    text-align: center;\n    margin-top: 20px;\n  }\n  .footer p {\n    font-size: 9px;\n    color: rgba(255,255,255,0.7);\n    letter-spacing: 0.04em;\n  }\n</style>\n</head>\n<body>\n  <div class=\"header\">\n    <div class=\"header-left\">\n      <h1>Automation Agency</h1>\n      <div class=\"tagline\">Offering Automation Solutions</div>\n    </div>\n    <div class=\"header-right\">\n      <div class=\"contact-line\">📍 Makati, Metro Manila, Philippines</div>\n      <div class=\"contact-line\">📞 +63 (2) 8123-4567</div>\n      <div class=\"contact-line\">✉ aiagency@gmail.com</div>\n    </div>\n  </div>\n\n  <div class=\"title-band\">\n    <div class=\"booking-label\">Booking Details:</div>\n    <div class=\"client-name\">${firstName} ${lastName}</div>\n    <hr class=\"divider-line\">\n  </div>\n\n  <div class=\"body-wrap\">\n    <div class=\"status-row\">\n      <span class=\"badge\">✓ Confirmed</span>\n      <span class=\"status-text\">Booking Confirmed</span>\n    </div>\n    <div class=\"section-subtitle\">This is the details of your scheduled meeting.</div>\n\n    <table class=\"detail-table\">\n      <tr>\n        <td class=\"td-label\">Client Name</td>\n        <td class=\"td-val\">${name}</td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Email Address</td>\n        <td class=\"td-val\">${email}</td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Date &amp; Time</td>\n        <td class=\"td-val\">${formatted}</td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Duration</td>\n        <td class=\"td-val\">30 Minutes</td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Google Meet</td>\n        <td class=\"td-val\"><a href=\"${meet}\">${meet}</a></td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Date Issued</td>\n        <td class=\"td-val\">${today}</td>\n      </tr>\n    </table>\n\n    <div class=\"actions-section\">\n      <div class=\"actions-label\">Need to make changes?</div>\n      <div class=\"btn-row\">\n        <a class=\"btn btn-cancel\" href=\"${baseUrl}/webhook/cancel?id=${id}&email=${encodeURIComponent(email)}\">Cancel My Booking</a>\n        <a class=\"btn btn-reschedule\" href=\"${baseUrl}/webhook/reschedule?id=${id}&email=${encodeURIComponent(email)}&originalEmail=${encodeURIComponent(email)}\">Change My Date</a>\n      </div>\n      <div class=\"booking-id-section\" style=\"margin-top:14px;\">\n        <div class=\"booking-id-label\">Booking ID</div>\n        <div class=\"booking-id-val\">${id}</div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"footer\">\n    <p>Automation Agency &nbsp;|&nbsp; Makati, Metro Manila &nbsp;|&nbsp; aiagency@gmail.com &nbsp;|&nbsp; This document is system-generated.</p>\n  </div>\n</body>\n</html>`;\n})() }}"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1408,
+        448
+      ],
+      "id": "cb100b90-c123-42d0-935d-7059043c3dd9",
+      "name": "HTML — build receipt"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "html",
+        "options": {
+          "fileName": "index.html"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1648,
+        448
+      ],
+      "id": "c45e79fe-6370-49af-a4e2-66a1d1fb7aad",
+      "name": "Convert to File — index.html"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:3010/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1888,
+        448
+      ],
+      "id": "feeb11a0-2eb2-4d62-898a-ffb613ceaf3a",
+      "name": "HTTP Request — Gotenberg PDF"
+    },
+    {
+      "parameters": {
+        "jsCode": "const nameRaw = $('Set — bookingId + meetLink').item.json.clientName || 'Client';\nconst parts = nameRaw.trim().split(' ');\nconst firstName = parts[0] || 'Firstname';\nconst lastName  = parts.slice(1).join('') || 'Lastname';\nconst fileName  = `${lastName}_${firstName}_Booking.pdf`;\n\nconst binaryKey = Object.keys($binary)[0];\nconst binaryData = $binary[binaryKey];\nbinaryData.fileName = fileName;\nbinaryData.mimeType = 'application/pdf';\n\nreturn [{ json: $json, binary: { data: binaryData } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        448
+      ],
+      "id": "9d9d4e4f-9878-4ed2-8087-58798cdee137",
+      "name": "Code — rename PDF (booking)"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Set — bookingId + meetLink').item.json.clientEmail }}",
+        "subject": "Your booking is confirmed!",
+        "message": "={{ $('Set — bookingId + meetLink').item.json.clientName }},\n\nYour booking is confirmed. Your receipt PDF is attached and you can join Google Meet: {{ $('Set — bookingId + meetLink').item.json.meetLink }}.\n\nIf you want to cancel or reschedule, you may do so by opening the attached PDF.\n\nSee you soon!",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2368,
+        448
+      ],
+      "id": "64460217-0b26-449a-b26c-b8fba1572917",
+      "name": "Gmail — send receipt",
+      "webhookId": "eeaaa89c-c3b1-485e-976d-c09cdaec20f2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9mmemdeUhuW1xN1V",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "cancel",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        752
+      ],
+      "id": "c99af7a6-c3bc-4787-a2e3-95c59a3367ff",
+      "name": "Webhook — GET /cancel",
+      "webhookId": "cccccccc-0003-0003-0003-000000000005"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Cancel Booking?</title>\n  <style>\n    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }\n    .card { background: #fff; border-radius: 16px; padding: 56px 48px; max-width: 420px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }\n    .icon { font-size: 56px; margin-bottom: 20px; }\n    h2 { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 10px; }\n    p { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 32px; }\n    .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }\n    .btn-danger { padding: 12px 28px; background: #e53e3e; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; }\n    .btn-safe { padding: 12px 28px; background: #f0f2f5; color: #333; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; }\n    .warning { font-size: 13px; color: #999; margin-top: 20px; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <div class=\"icon\">⚠️</div>\n    <h2>Cancel this booking?</h2>\n    <p>Are you sure you want to cancel? This is a permanent action and can't be undone.</p>\n    <div class=\"buttons\">\n      <a href=\"/webhook/cancel-confirm?id={{ $json.query.id }}&email={{ $json.query.email }}\" class=\"btn-danger\">Yes, cancel it</a>\n      <a href=\"/webhook/cancel-keep\" class=\"btn-safe\">Keep my booking</a>\n    </div>\n    <p class=\"warning\">Your meeting will be permanently removed from the calendar.</p>\n  </div>\n</body>\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        240,
+        752
+      ],
+      "id": "43e03510-7746-49f3-afe5-a032a513553d",
+      "name": "Respond — confirmation page"
+    },
+    {
+      "parameters": {
+        "path": "cancel-confirm",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        960
+      ],
+      "id": "ff606cfe-1762-4892-a60c-00c2e1dd1ddd",
+      "name": "Webhook — GET /cancel-confirm",
+      "webhookId": "17fb6118-6606-444e-9948-d175a7f39fac"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "list"
+        },
+        "eventId": "={{ $json.query.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        960
+      ],
+      "id": "9301189a-983c-4fb2-8e48-c68fe63fad21",
+      "name": "Google Calendar — delete event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "0IT1z5zz0ATyNyyA",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst email = $('Webhook — GET /cancel-confirm').item.json.query.email || '';\n\nconst userRecord = staticData[email];\nconst bookingId  = $('Webhook — GET /cancel-confirm').item.json.query.id || '';\n\nif (userRecord && userRecord.selectedSlot) {\n  const slot = userRecord.selectedSlot;\n\n  if (staticData._bookedSlots) {\n    staticData._bookedSlots = staticData._bookedSlots.filter(s => s !== slot);\n  }\n\n  if (!staticData._cancelledSlots) staticData._cancelledSlots = [];\n  if (!staticData._cancelledSlots.includes(slot)) {\n    staticData._cancelledSlots.push(slot);\n  }\n}\n\nreturn [{ json: $json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        960
+      ],
+      "id": "ed7eb43e-3ef1-4fd5-b0fe-583065f9456f",
+      "name": "Code — free cancelled slot"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Booking Cancelled</title>\n  <style>\n    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }\n    .card { background: #fff; border-radius: 16px; padding: 56px 48px; max-width: 400px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }\n    .icon { font-size: 56px; margin-bottom: 20px; }\n    h2 { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 10px; }\n    p { font-size: 15px; color: #666; line-height: 1.6; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <div class=\"icon\">🗑️</div>\n    <h2>Booking Cancelled</h2>\n    <p>Your booking has been cancelled.</p>\n  </div>\n</body>\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        720,
+        960
+      ],
+      "id": "f21dba4d-eb0f-47a9-aef3-cf2a5796995f",
+      "name": "Respond — booking cancelled"
+    },
+    {
+      "parameters": {
+        "path": "cancel-keep",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1152
+      ],
+      "id": "a91476cf-6ae5-4c8b-8a68-47c0600122b0",
+      "name": "Webhook — GET /cancel-keep",
+      "webhookId": "cccccccc-0003-0003-0003-000000000007"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Booking Kept</title>\n  <style>\n    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }\n    .card { background: #fff; border-radius: 16px; padding: 56px 48px; max-width: 400px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }\n    .icon { font-size: 56px; margin-bottom: 20px; }\n    h2 { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 10px; }\n    p { font-size: 15px; color: #666; line-height: 1.6; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <div class=\"icon\">✅</div>\n    <h2>Booking is Not Cancelled</h2>\n    <p>Make sure to be there. We look forward to seeing you!</p>\n  </div>\n</body>\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        240,
+        1152
+      ],
+      "id": "2567af74-397d-4701-b3e6-62a2e38512f9",
+      "name": "Respond — booking kept"
+    },
+    {
+      "parameters": {
+        "path": "reschedule",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1504
+      ],
+      "id": "02006a55-da87-4108-84be-5a743898c473",
+      "name": "Webhook — GET /reschedule",
+      "webhookId": "dddddddd-0004-0004-0004-000000000006"
+    },
+    {
+      "parameters": {
+        "jsCode": "const bookingId = $json.query.id || '';\nconst email = $json.query.originalEmail || $json.query.email || '';\n\nconst staticData = $getWorkflowStaticData('global');\nconst record = staticData[email];\n\nif (!record || !record.slots || record.slots.length === 0) {\n  return [{ json: {\n    renderError: true,\n    errorMessage: 'We could not find your booking session. Please book fresh and cancel your old event manually.',\n    bookingId\n  } }];\n}\n\nstaticData[email].bookingId = bookingId;\n\nconst bookedSlots = new Set(staticData._bookedSlots || []);\nconst userCurrentSlot = record.selectedSlot || '';\nconst availableSlots = record.slots.filter(s => !bookedSlots.has(s) || s === userCurrentSlot);\n\nconst options = availableSlots.map(s => {\n  const dt = new Date(s);\n  const label = dt.toLocaleString('en-PH', {\n    weekday: 'short', month: 'short', day: 'numeric',\n    hour: '2-digit', minute: '2-digit',\n    timeZone: 'Asia/Manila'\n  });\n  return `<option value=\"${s}\">${label}</option>`;\n}).join('');\n\nreturn [{ json: {\n  renderError: false,\n  name: record.clientName,\n  email: record.clientEmail,\n  bookingId,\n  slotCount: availableSlots.length,\n  optionsHtml: options\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        1504
+      ],
+      "id": "4edbd1bd-5f30-4469-a9c6-ae09032a9687",
+      "name": "Code — load slots for reschedule"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ (() => {\n  const d = $json;\n  if (d.renderError) {\n    return `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Error</title>\n<style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f0f2f5;}\n.card{background:#fff;border-radius:16px;padding:48px 40px;max-width:400px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08);}\nh2{font-size:22px;color:#111;margin-bottom:12px;} p{color:#666;margin-bottom:24px;}\na{display:inline-block;padding:12px 24px;background:#1565C0;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;}</style>\n</head><body><div class=\"card\"><h2>Oops</h2><p>${d.errorMessage}</p><a href=\"/webhook/booking\">Book again</a></div></body></html>`;\n  }\n  return `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Change Your Date</title>\n  <style>\n    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }\n    .card { background: #fff; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 440px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; }\n    h1 { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 24px; }\n    .slot-count { font-size: 13px; color: #1565C0; font-weight: 600; margin-top: 20px; display: block; }\n    label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; text-align: left; }\n    select { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #111; background: #fafafa; outline: none; cursor: pointer; transition: border-color 0.2s; }\n    select:focus { border-color: #1565C0; background-color: #fff; }\n    .btn { display: block; width: 100%; margin-top: 28px; padding: 14px; background: #1565C0; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; }\n    .btn:hover { background: #0D47A1; }\n    .btn:active { transform: scale(0.98); }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>To reschedule, pick a new time</h1>\n    <form method=\"POST\" action=\"/webhook/reschedule\">\n      <input type=\"hidden\" name=\"clientName\" value=\"${d.name}\">\n      <input type=\"hidden\" name=\"clientEmail\" value=\"${d.email}\">\n      <input type=\"hidden\" name=\"bookingId\" value=\"${d.bookingId}\">\n      \n      <label for=\"slot\">Available times</label>\n      <select id=\"slot\" name=\"selectedSlot\" required>${d.optionsHtml}</select>\n      \n      <button type=\"submit\" class=\"btn\">Update Booking</button>\n      \n      <p class=\"slot-count\">${d.slotCount} time${d.slotCount !== 1 ? 's' : ''} available</p>\n    </form>\n  </div>\n</body>\n</html>`;\n})() }}`",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        480,
+        1504
+      ],
+      "id": "c7ee235e-26ed-4c32-80de-a85e0e85235b",
+      "name": "Respond — serve reschedule slot picker"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "reschedule",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1712
+      ],
+      "id": "740a8ad1-0ad0-4dfe-bdb9-768fc8682ff6",
+      "name": "Webhook — POST /reschedule",
+      "webhookId": "eeeeeeee-0005-0005-0005-000000000007"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "rs-name",
+              "name": "clientName",
+              "value": "={{ $json.body.clientName }}",
+              "type": "string"
+            },
+            {
+              "id": "rs-email",
+              "name": "clientEmail",
+              "value": "={{ $json.body.clientEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "rs-slot",
+              "name": "selectedSlot",
+              "value": "={{ $json.body.selectedSlot }}",
+              "type": "string"
+            },
+            {
+              "id": "rs-id",
+              "name": "bookingId",
+              "value": "={{ $json.body.bookingId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        1712
+      ],
+      "id": "44200965-32b3-44c4-919f-4c0dcd576ccb",
+      "name": "Set — reschedule fields"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "list"
+        },
+        "eventId": "={{ $json.bookingId }}",
+        "updateFields": {
+          "end": "={{ DateTime.fromISO($json.selectedSlot).plus({minutes:30}).toISO() }}",
+          "start": "={{ $json.selectedSlot }}",
+          "summary": "=Booking (rescheduled) — {{ $json.clientName }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        1712
+      ],
+      "id": "a819770e-e3c1-45c4-ad88-70fa1a52aac0",
+      "name": "Google Calendar — update event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "0IT1z5zz0ATyNyyA",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "rs3-id",
+              "name": "bookingId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "rs3-meet",
+              "name": "meetLink",
+              "value": "={{ $json.hangoutLink }}",
+              "type": "string"
+            },
+            {
+              "id": "rs3-name",
+              "name": "clientName",
+              "value": "={{ $('Set — reschedule fields').item.json.clientName }}",
+              "type": "string"
+            },
+            {
+              "id": "rs3-email",
+              "name": "clientEmail",
+              "value": "={{ $('Set — reschedule fields').item.json.clientEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "rs3-slot",
+              "name": "selectedSlot",
+              "value": "={{ $('Set — reschedule fields').item.json.selectedSlot }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        1712
+      ],
+      "id": "f664e106-d8d3-491a-b56f-a2176ed1cf99",
+      "name": "Set — reschedule bookingId + meetLink"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst email      = $json.clientEmail;\nconst newSlot    = $json.selectedSlot;\nconst record     = staticData[email];\nconst oldSlot    = record ? record.selectedSlot : null;\n\nif (!staticData._bookedSlots) staticData._bookedSlots = [];\n\nif (oldSlot) {\n  staticData._bookedSlots = staticData._bookedSlots.filter(s => s !== oldSlot);\n}\n\nif (!staticData._bookedSlots.includes(newSlot)) {\n  staticData._bookedSlots.push(newSlot);\n}\n\nif (record) {\n  record.selectedSlot = newSlot;\n  record.bookingId    = $json.bookingId;\n}\n\nreturn [{ json: $json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        1712
+      ],
+      "id": "1bd6e891-2922-4625-a876-cc0217986441",
+      "name": "Code — swap booked slots on reschedule"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Booking Updated</title>\n  <style>\n    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }\n    .card { background: #fff; border-radius: 16px; padding: 56px 48px; max-width: 400px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }\n    .icon { font-size: 56px; margin-bottom: 20px; }\n    h2 { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 10px; }\n    p { font-size: 15px; color: #666; line-height: 1.6; }\n    .note { margin-top: 16px; font-size: 13px; color: #aaa; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <div class=\"icon\">🔄</div>\n    <h2>Booking Updated!</h2>\n    <p>Your meeting has been moved to the new time and the calendar has been updated.</p>\n    <p class=\"note\">Check your email for your updated receipt.</p>\n  </div>\n</body>\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1200,
+        1712
+      ],
+      "id": "014bebfa-4418-4f97-9e87-1d7e5755c068",
+      "name": "Respond — reschedule confirmed page"
+    },
+    {
+      "parameters": {
+        "html": "{{ (() => {\n  const name  = $('Set — reschedule bookingId + meetLink').item.json.clientName;\n  const email = $('Set — reschedule bookingId + meetLink').item.json.clientEmail;\n  const slot  = $('Set — reschedule bookingId + meetLink').item.json.selectedSlot;\n  const meet  = $('Set — reschedule bookingId + meetLink').item.json.meetLink;\n  const id    = $('Set — reschedule bookingId + meetLink').item.json.bookingId;\n  const baseUrl = 'https://bradford-antral-mortally.ngrok-free.dev';\n  const dt = new Date(slot);\n  const formatted = dt.toLocaleString('en-PH', {\n    weekday: 'long', year: 'numeric', month: 'long',\n    day: 'numeric', hour: '2-digit', minute: '2-digit',\n    timeZone: 'Asia/Manila'\n  });\n  const nameParts = name.trim().split(' ');\n  const firstName = nameParts[0] || '';\n  const lastName  = nameParts.slice(1).join(' ') || '';\n  const today = new Date().toLocaleString('en-PH', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Manila' });\n  return `<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<style>\n  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');\n  * { box-sizing: border-box; margin: 0; padding: 0; }\n  body {\n    font-family: 'Inter', sans-serif;\n    background: #ffffff;\n    color: #1a1a2e;\n    width: 595px;\n    height: 842px;\n    margin: 0 auto;\n    display: flex;\n    flex-direction: column;\n    overflow: hidden;\n  }\n\n    .content-wrapper {\n    flex-grow: 1; /* This pushes the footer/bottom to the very end */\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n  }\n  \n  .header {\n    background: #0D47A1;\n    padding: 22px 36px 18px;\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    border-bottom: 4px solid #1565C0;\n  }\n  .header-left h1 {\n    font-family: 'Source Serif 4', serif;\n    font-size: 20px;\n    font-weight: 700;\n    color: #ffffff;\n    letter-spacing: 0.04em;\n    text-transform: uppercase;\n  }\n  .header-left .tagline {\n    font-size: 10px;\n    color: rgba(255,255,255,0.7);\n    letter-spacing: 0.08em;\n    text-transform: uppercase;\n    margin-top: 2px;\n  }\n  .header-right { text-align: right; }\n  .header-right .contact-line {\n    font-size: 9.5px;\n    color: rgba(255,255,255,0.85);\n    line-height: 1.8;\n  }\n  .title-band {\n    background: #E3F2FD;\n    border-left: 5px solid #1565C0;\n    padding: 14px 36px;\n  }\n  .title-band .booking-label {\n    font-size: 10px;\n    font-weight: 600;\n    color: #1565C0;\n    letter-spacing: 0.1em;\n    text-transform: uppercase;\n  }\n  .title-band .client-name {\n    font-family: 'Source Serif 4', serif;\n    font-size: 16px;\n    font-weight: 700;\n    color: #0D47A1;\n    margin-top: 2px;\n    letter-spacing: 0.01em;\n  }\n  .title-band .divider-line {\n    border: none;\n    border-top: 1.5px solid #90CAF9;\n    margin-top: 10px;\n  }\n  .body-wrap { \n      flex: 1;\n      display: flex;\n      flex-direction: column;\n      padding: 20px 36px 0;\n      min-height: 0;\n  \n  }\n  .section-title {\n    font-size: 13px;\n    font-weight: 700;\n    color: #0D47A1;\n    letter-spacing: 0.05em;\n    text-transform: uppercase;\n    margin-bottom: 4px;\n  }\n  .section-subtitle {\n    font-size: 11.5px;\n    color: #555;\n    margin-bottom: 16px;\n  }\n  .detail-table {\n    width: 100%;\n    border-collapse: collapse;\n    margin-bottom: 24px;\n    border: 1px solid #BBDEFB;\n    border-radius: 6px;\n    overflow: hidden;\n  }\n  .detail-table tr:nth-child(odd) { background: #F5F9FF; }\n  .detail-table tr:nth-child(even) { background: #ffffff; }\n  .detail-table td {\n    padding: 9px 14px;\n    font-size: 11.5px;\n    border-bottom: 1px solid #DDEEFF;\n    vertical-align: middle;\n  }\n  .detail-table tr:last-child td { border-bottom: none; }\n  .detail-table .td-label {\n    font-weight: 600;\n    color: #1565C0;\n    width: 38%;\n    text-transform: uppercase;\n    font-size: 10px;\n    letter-spacing: 0.05em;\n  }\n  .detail-table .td-val { color: #1a1a2e; font-weight: 500; }\n  .detail-table .td-val a { color: #1565C0; text-decoration: none; }\n  .status-row {\n    display: flex;\n    align-items: center;\n    gap: 8px;\n    margin-bottom: 18px;\n  }\n  .badge {\n    display: inline-block;\n    background: #1565C0;\n    color: #fff;\n    font-size: 9px;\n    font-weight: 700;\n    padding: 3px 10px;\n    border-radius: 20px;\n    letter-spacing: 0.08em;\n    text-transform: uppercase;\n  }\n  .status-text {\n    font-family: 'Source Serif 4', serif;\n    font-size: 15px;\n    font-weight: 600;\n    color: #0D47A1;\n  }\n  .actions-section { \n      flex: 1;\n      display: flex;\n      flex-direction: column;\n      justify-content: center;\n      align-items: center;\n      gap: 14px;\n      padding: 16px 0;\n  \n  }\n  .actions-label {\n    font-size: 10px;\n    color: #888;\n    letter-spacing: 0.06em;\n    text-transform: uppercase;\n    margin-bottom: 10px;\n    font-weight: 600;\n  }\n  .btn-row { display: flex; gap: 12px; justify-content: center; }\n  .btn {\n    display: inline-block;\n    padding: 9px 20px;\n    border-radius: 6px;\n    text-decoration: none;\n    font-weight: 600;\n    font-size: 11px;\n    letter-spacing: 0.03em;\n  }\n  .btn-cancel { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }\n  .btn-reschedule { background: #E3F2FD; color: #0D47A1; border: 1px solid #BBDEFB; }\n  .booking-id-section {\n    text-align: center;\n    margin-top: 16px;\n    padding: 10px 14px;\n    background: #F5F9FF;\n    border: 1px dashed #90CAF9;\n    border-radius: 6px;\n    display: inline-block;\n    width: 100%;\n  }\n  .booking-id-label {\n    font-size: 9px;\n    color: #1565C0;\n    text-transform: uppercase;\n    letter-spacing: 0.1em;\n    font-weight: 700;\n  }\n  .booking-id-val {\n    font-size: 11px;\n    color: #0D47A1;\n    font-weight: 600;\n    margin-top: 3px;\n    word-break: break-all;\n  }\n  .footer {\n    background: #0D47A1;\n    padding: 10px 36px;\n    text-align: center;\n    margin-top: 20px;\n  }\n  .footer p {\n    font-size: 9px;\n    color: rgba(255,255,255,0.7);\n    letter-spacing: 0.04em;\n  }\n</style>\n</head>\n<body>\n  <div class=\"header\">\n    <div class=\"header-left\">\n      <h1>Automation Agency</h1>\n      <div class=\"tagline\">Professional Automation Solutions</div>\n    </div>\n    <div class=\"header-right\">\n      <div class=\"contact-line\">📍 Makati, Metro Manila, Philippines</div>\n      <div class=\"contact-line\">📞 +63 (2) 8123-4567</div>\n      <div class=\"contact-line\">✉ aiagency@gmail.com</div>\n    </div>\n  </div>\n\n  <div class=\"title-band\">\n    <div class=\"booking-label\">Booking Details: ${firstName} ${lastName}</div>\n    <div class=\"client-name\">${firstName} ${lastName}</div>\n    <hr class=\"divider-line\">\n  </div>\n\n  <div class=\"body-wrap\">\n    <div class=\"status-row\">\n      <span class=\"badge\">🔄 Rescheduled</span>\n      <span class=\"status-text\">Booking Updated</span>\n    </div>\n    <div class=\"section-subtitle\">Your meeting has been moved to a new time.</div>\n\n    <table class=\"detail-table\">\n      <tr>\n        <td class=\"td-label\">Client Name</td>\n        <td class=\"td-val\">${name}</td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Email Address</td>\n        <td class=\"td-val\">${email}</td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">New Date &amp; Time</td>\n        <td class=\"td-val\">${formatted}</td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Duration</td>\n        <td class=\"td-val\">30 Minutes</td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Google Meet</td>\n        <td class=\"td-val\"><a href=\"${meet}\">${meet}</a></td>\n      </tr>\n      <tr>\n        <td class=\"td-label\">Date Updated</td>\n        <td class=\"td-val\">${today}</td>\n      </tr>\n    </table>\n\n    <div class=\"actions-section\">\n      <div class=\"actions-label\">Need to make changes again?</div>\n      <div class=\"btn-row\">\n        <a class=\"btn btn-cancel\" href=\"${baseUrl}/webhook/cancel?id=${id}&email=${encodeURIComponent(email)}\">Cancel My Booking</a>\n        <a class=\"btn btn-reschedule\" href=\"${baseUrl}/webhook/reschedule?id=${id}&email=${encodeURIComponent(email)}&originalEmail=${encodeURIComponent(email)}\">Change My Date</a>\n      </div>\n      <div class=\"booking-id-section\" style=\"margin-top:14px;\">\n        <div class=\"booking-id-label\">Booking ID</div>\n        <div class=\"booking-id-val\">${id}</div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"footer\">\n    <p>Automation Agency &nbsp;|&nbsp; Makati, Metro Manila &nbsp;|&nbsp; aiagency@gmail.com &nbsp;|&nbsp; This document is system-generated.</p>\n  </div>\n</body>\n</html>`;\n})() }}"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        1712
+      ],
+      "id": "20a245ba-a717-4982-98aa-b2bc23ab04cb",
+      "name": "HTML — build updated receipt"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "html",
+        "options": {
+          "fileName": "index.html"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        1712
+      ],
+      "id": "e1b59547-016a-49da-807d-fe1e66b107e6",
+      "name": "Convert to File — reschedule receipt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:3010/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1920,
+        1712
+      ],
+      "id": "14fd06f8-694b-4327-b248-b5f517574826",
+      "name": "HTTP Request — Gotenberg PDF (reschedule)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const nameRaw = $('Set — reschedule bookingId + meetLink').item.json.clientName || 'Client';\nconst parts = nameRaw.trim().split(' ');\nconst firstName = parts[0] || 'Firstname';\nconst lastName  = parts.slice(1).join('') || 'Lastname';\nconst fileName  = `${lastName}_${firstName}_Booking.pdf`;\n\nconst binaryKey = Object.keys($binary)[0];\nconst binaryData = $binary[binaryKey];\nbinaryData.fileName = fileName;\nbinaryData.mimeType = 'application/pdf';\n\nreturn [{ json: $json, binary: { data: binaryData } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        1712
+      ],
+      "id": "6c3431ad-519e-4642-abab-b570579a3e69",
+      "name": "Code — rename PDF (reschedule)"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Set — reschedule bookingId + meetLink').item.json.clientEmail }}",
+        "subject": "Your booking has been updated!",
+        "message": "={{ $('Set — reschedule bookingId + meetLink').item.json.clientName }},\n\nYour booking has been rescheduled. Your updated receipt is attached.\n\nJoin Google Meet: {{ $('Set — reschedule bookingId + meetLink').item.json.meetLink }}\n\nNeed to cancel or reschedule again? Use the buttons inside the attached PDF.\n\nSee you soon!",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        1712
+      ],
+      "id": "86c17121-9d61-492b-a4ad-1834a0f7bd9c",
+      "name": "Gmail — send updated receipt",
+      "webhookId": "de6102cf-384e-4649-8d99-0f34cf539f6d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9mmemdeUhuW1xN1V",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook — GET /booking": {
+      "main": [
+        [
+          {
+            "node": "Respond — serve Page 1 form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — POST /booking": {
+      "main": [
+        [
+          {
+            "node": "Set — clientName + clientEmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set — clientName + clientEmail": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar — get freebusy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar — get freebusy": {
+      "main": [
+        [
+          {
+            "node": "Code — calculate + store free slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — calculate + store free slots": {
+      "main": [
+        [
+          {
+            "node": "Respond — redirect to Page 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — GET /booking-step2": {
+      "main": [
+        [
+          {
+            "node": "Code — load slots + build option list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — load slots + build option list": {
+      "main": [
+        [
+          {
+            "node": "Respond — serve Page 2 slot picker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — POST /booking-step2": {
+      "main": [
+        [
+          {
+            "node": "Set — slot + client data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set — slot + client data": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar — create event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar — create event": {
+      "main": [
+        [
+          {
+            "node": "Set — bookingId + meetLink",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set — bookingId + meetLink": {
+      "main": [
+        [
+          {
+            "node": "Code — if bookingId is changed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — if bookingId is changed": {
+      "main": [
+        [
+          {
+            "node": "Respond — booking confirmed page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond — booking confirmed page": {
+      "main": [
+        [
+          {
+            "node": "HTML — build receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML — build receipt": {
+      "main": [
+        [
+          {
+            "node": "Convert to File — index.html",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File — index.html": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request — Gotenberg PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request — Gotenberg PDF": {
+      "main": [
+        [
+          {
+            "node": "Code — rename PDF (booking)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — rename PDF (booking)": {
+      "main": [
+        [
+          {
+            "node": "Gmail — send receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — GET /cancel": {
+      "main": [
+        [
+          {
+            "node": "Respond — confirmation page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — GET /cancel-confirm": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar — delete event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar — delete event": {
+      "main": [
+        [
+          {
+            "node": "Code — free cancelled slot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — free cancelled slot": {
+      "main": [
+        [
+          {
+            "node": "Respond — booking cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — GET /cancel-keep": {
+      "main": [
+        [
+          {
+            "node": "Respond — booking kept",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — GET /reschedule": {
+      "main": [
+        [
+          {
+            "node": "Code — load slots for reschedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — load slots for reschedule": {
+      "main": [
+        [
+          {
+            "node": "Respond — serve reschedule slot picker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — POST /reschedule": {
+      "main": [
+        [
+          {
+            "node": "Set — reschedule fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set — reschedule fields": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar — update event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar — update event": {
+      "main": [
+        [
+          {
+            "node": "Set — reschedule bookingId + meetLink",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set — reschedule bookingId + meetLink": {
+      "main": [
+        [
+          {
+            "node": "Code — swap booked slots on reschedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — swap booked slots on reschedule": {
+      "main": [
+        [
+          {
+            "node": "Respond — reschedule confirmed page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond — reschedule confirmed page": {
+      "main": [
+        [
+          {
+            "node": "HTML — build updated receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML — build updated receipt": {
+      "main": [
+        [
+          {
+            "node": "Convert to File — reschedule receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File — reschedule receipt": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request — Gotenberg PDF (reschedule)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request — Gotenberg PDF (reschedule)": {
+      "main": [
+        [
+          {
+            "node": "Code — rename PDF (reschedule)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — rename PDF (reschedule)": {
+      "main": [
+        [
+          {
+            "node": "Gmail — send updated receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "799b4bf8-a95b-4a11-b193-f54a1f0b91fa",
+  "meta": {
+    "instanceId": "9a467faaf2db039a7c4b7f2945de30ea150f65942f71821fd0eb089aac44d00b"
+  },
+  "id": "57cVeTxoqduXxE1j",
+  "tags": []
+}
